@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Display Webcam Stream</title>
+<style>
+#container {
+	margin: 0 auto;
+	width: 500px;
+	height: 375px;
+	border: 10px #333 solid;
+	display: none; /* Oculta el video cuando la cámara está apagada */
+}
+#videoElement {
+	width: 100%;
+	height: 100%;
+	background-color: #666;
+}
+button {
+    margin: 10px;
+}
+</style>
+</head>
+<body>
+<div id="container">
+	<video autoplay="true" id="videoElement"></video>
+</div>
+<button id="startButton">Abrir Cámara</button>
+<button id="stopButton" disabled>Cerrar Cámara</button>
+
+<script>
+  const video = document.getElementById('videoElement');
+  const container = document.getElementById('container');
+  const startButton = document.getElementById('startButton');
+  const stopButton = document.getElementById('stopButton');
+  let stream;
+
+  // Función para iniciar la cámara
+  startButton.addEventListener('click', async () => {
+      try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          video.srcObject = stream;
+          container.style.display = 'block'; // Muestra el contenedor de video
+          startButton.disabled = true;
+          stopButton.disabled = false;
+      } catch (error) {
+          console.log("Error al acceder a la cámara: ", error);
+      }
+  });
+
+  // Función para detener la cámara
+  stopButton.addEventListener('click', () => {
+      if (stream) {
+          // Detiene cada track del stream
+          stream.getTracks().forEach(track => track.stop());
+          video.srcObject = null;
+          container.style.display = 'none'; // Oculta el contenedor de video
+          startButton.disabled = false;
+          stopButton.disabled = true;
+      }
+  });
+</script>
+</body>
+</html>
