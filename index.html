@@ -3,63 +3,108 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Display Webcam Stream</title>
+<title>LENS PARA LENGUAJE DE SEÑAS</title>
 <style>
-#container {
-	margin: 0 auto;
-	width: 500px;
-	height: 375px;
-	border: 10px #333 solid;
-	display: none; /* Oculta el video cuando la cámara está apagada */
-}
-#videoElement {
-	width: 100%;
-	height: 100%;
-	background-color: #666;
-}
-button {
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    margin-top: 20px;
+  }
+  #container {
+    margin: 20px auto;
+    width: 90%;
+    max-width: 500px;
+    height: 375px;
+    border: 10px #333 solid;
+    background-color: black;
+    display: none;
+  }
+  #videoElement {
+    width: 100%;
+    height: 100%;
+  }
+  button {
     margin: 10px;
-}
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .button-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
 </style>
 </head>
 <body>
+
+<h1>LENS PARA LENGUAJE DE SEÑAS</h1>
+
 <div id="container">
-	<video autoplay="true" id="videoElement"></video>
+  <video autoplay="true" id="videoElement"></video>
 </div>
-<button id="startButton">Abrir Cámara</button>
-<button id="stopButton" disabled>Cerrar Cámara</button>
+
+<div class="button-container">
+  <button id="startButton">Abrir Cámara</button>
+  <button id="stopButton" disabled>Cerrar Cámara</button>
+  <button id="toggleCameraButton">Cámara Delantera</button>
+</div>
 
 <script>
   const video = document.getElementById('videoElement');
   const container = document.getElementById('container');
   const startButton = document.getElementById('startButton');
   const stopButton = document.getElementById('stopButton');
+  const toggleCameraButton = document.getElementById('toggleCameraButton');
   let stream;
+  let currentCamera = 'environment'; // Valor predeterminado: cámara trasera
 
   // Función para iniciar la cámara
   startButton.addEventListener('click', async () => {
-      try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: true });
-          video.srcObject = stream;
-          container.style.display = 'block'; // Muestra el contenedor de video
-          startButton.disabled = true;
-          stopButton.disabled = false;
-      } catch (error) {
-          console.log("Error al acceder a la cámara: ", error);
-      }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: currentCamera }
+      });
+      video.srcObject = stream;
+      container.style.display = 'block';
+      startButton.disabled = true;
+      stopButton.disabled = false;
+    } catch (error) {
+      console.log("Error al acceder a la cámara: ", error);
+    }
   });
 
   // Función para detener la cámara
   stopButton.addEventListener('click', () => {
-      if (stream) {
-          // Detiene cada track del stream
-          stream.getTracks().forEach(track => track.stop());
-          video.srcObject = null;
-          container.style.display = 'none'; // Oculta el contenedor de video
-          startButton.disabled = false;
-          stopButton.disabled = true;
-      }
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+      container.style.display = 'none';
+      startButton.disabled = false;
+      stopButton.disabled = true;
+    }
+  });
+
+  // Cambiar entre cámara delantera y trasera
+  toggleCameraButton.addEventListener('click', () => {
+    currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
+    toggleCameraButton.textContent = currentCamera === 'environment' ? 'Cámara Delantera' : 'Cámara Trasera';
+    
+    // Detener y reiniciar la cámara
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+      startButton.disabled = false;
+      stopButton.disabled = true;
+      container.style.display = 'none';
+    }
   });
 </script>
+
 </body>
 </html>
+
